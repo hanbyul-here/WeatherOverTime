@@ -1,25 +1,22 @@
 ﻿# Author: Paitricio Gonzalez Vivo @patricio 2016
 import:
-    - https://tangrams.github.io/blocks/global.yaml
-    - https://tangrams.github.io/blocks/functions/zoom.yaml
-    - https://tangrams.github.io/blocks/functions/aastep.yaml
-    - https://tangrams.github.io/blocks/geometry/matrices.yaml
-    - https://tangrams.github.io/blocks/patterns/grid.yaml
-    - https://tangrams.github.io/blocks/shapes/cross.yaml
-    - https://tangrams.github.io/blocks/elevation/stripes.yaml
-    - https://tangrams.github.io/blocks/elevation/normal.yaml
-    - https://tangrams.github.io/blocks/lines/dots.yaml
-
+    - http://tangrams.github.io/blocks/global.yaml
+    - http://tangrams.github.io/blocks/functions/zoom.yaml
+    - http://tangrams.github.io/blocks/elevation/stripes.yaml
+    - http://tangrams.github.io/blocks/elevation/normal.yaml
+    - http://tangrams.github.io/blocks/patterns/grid.yaml
+    - http://tangrams.github.io/blocks/lines/dots.yaml
 sources:
     mapzen:
         type: MVT
         url: https://tile.nextzen.org/tilezen/vector/v1/512/all/{z}/{x}/{y}.mvt?api_key=hx2J5tx6QDS1Pnhu8r97JQ
-        rasters: [normals-elevation]
+
         max_zoom: 16
     normals-elevation:
         type: Raster
-        url: https://tile.nextzen.org/tilezen/terrain/v1/normal/{z}/{x}/{y}.png?api_key=hx2J5tx6QDS1Pnhu8r97JQ
+        url: https://tile.mapzen.com/mapzen/terrain/v1/normal/{z}/{x}/{y}.png
         url_params:
+            api_key: mapzen-YoRQaZF
         max_zoom: 15
     stations:
         type: GeoJSON
@@ -192,13 +189,14 @@ styles:
         base: points
         texcoords: true
         animated: true
-        mix: [functions-aastep, geometry-matrices, shapes-cross]
         shaders:
             uniforms:
                 u_data: data_image
                 u_scale: scale_image
                 u_param: [812, 1599]
                 u_offset: 0
+                PI: 3.141592653589793
+                TWO_PI: 6.283185307179586
             blocks:
                 global: |
                     float getIndex (vec2 encodedIndex) {
@@ -218,7 +216,37 @@ styles:
                         st.y = 1.-st.y/texHeigth;
                         return texture2D(u_data,vec2(st.x/texWidth,st.y));
                     }
+                    mat2 rotate2D (float angle) {
+                        return mat2(cos(angle),-sin(angle),
+                                    sin(angle),cos(angle));
+                    }
+                    #ifdef TANGRAM_FRAGMENT_SHADER
+                    vec2 rotate2D (vec2 st, float a) {
+                        return (rotate2D(a)*(st-.5))+.5;
+                    }
+                    #endif
+                    float rect (vec2 st, vec2 size){
+                        size = .25-size*.125;
+                        vec2 uv = step(size,st*(1.0-st));
+                        return (uv.x*uv.y);
+                    }
 
+                    float rect (vec2 st, float size){
+                        return rect(st, vec2(size));
+                    }
+
+                    float cross (vec2 st, float size, float width) {
+                        return  clamp(  rect(st, vec2(size*0.5,width*0.125)) +
+                                        rect(st, vec2(width*0.125,size*0.5)),0.,1.);
+                    }
+                    float cross (in vec2 st, float _size) {
+                        return  rect(st, vec2(_size*0.5,_size*0.125)) +
+                                rect(st, vec2(_size*0.125,_size*0.5));
+                    }
+                    float cross (in vec2 st, vec2 _size) {
+                        return  rect(st, vec2(_size.x*0.5,_size.y*0.125)) +
+                                rect(st, vec2(_size.y*0.125,_size.x*0.5));
+                    }
                 color: |
                     float index = getIndex(color.st);
                     float t = u_offset;
