@@ -1,11 +1,11 @@
 ﻿# Author: Paitricio Gonzalez Vivo @patricio 2016
 import:
-    - http://tangrams.github.io/blocks/global.yaml
-    - http://tangrams.github.io/blocks/functions/zoom.yaml
-    - http://tangrams.github.io/blocks/elevation/stripes.yaml
-    - http://tangrams.github.io/blocks/elevation/normal.yaml
-    - http://tangrams.github.io/blocks/patterns/grid.yaml
-    - http://tangrams.github.io/blocks/lines/dots.yaml
+    - https://tangrams.github.io/blocks/global.yaml
+    - https://tangrams.github.io/blocks/functions/zoom.yaml
+    - https://tangrams.github.io/blocks/elevation/stripes.yaml
+    - https://tangrams.github.io/blocks/elevation/normal.yaml
+    - https://tangrams.github.io/blocks/patterns/grid.yaml
+    - https://tangrams.github.io/blocks/lines/dots.yaml
 sources:
     mapzen:
         type: MVT
